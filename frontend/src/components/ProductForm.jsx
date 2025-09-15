@@ -17,9 +17,9 @@ const ProductForm = ({ onFinish, editingProduct }) => {
   return (
     <Form
       layout="vertical"
-      onFinish={onFinish}
       form={form}
       initialValues={{ quantity: 1 }}
+      onFinish={(values) => onFinish(values, form)}
     >
       <Form.Item
         label="Product Name"
@@ -34,6 +34,7 @@ const ProductForm = ({ onFinish, editingProduct }) => {
         name="price"
         rules={[{ required: true, message: "Please enter product price" }]}
       >
+         <Input placeholder="Enter product prize" />
         <InputNumber min={0} style={{ width: "100%" }} />
       </Form.Item>
 
@@ -42,6 +43,7 @@ const ProductForm = ({ onFinish, editingProduct }) => {
         name="quantity"
         rules={[{ required: true, message: "Please enter product quantity" }]}
       >
+         <Input placeholder="Enter product quantity" />
         <InputNumber min={1} style={{ width: "100%" }} />
       </Form.Item>
 

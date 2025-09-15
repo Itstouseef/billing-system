@@ -1,13 +1,122 @@
 import React, { useEffect, useState } from "react";
-import { Card, message, Typography, Button } from "antd";
-import ProductForm from "../components/ProductForm";
-import ProductTable from "../components/ProductTable";
+import { Card, message, Typography, Button, Form, Input, InputNumber, Table, Popconfirm } from "antd";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";   // ✅ FIXED import
+import autoTable from "jspdf-autotable";
 import "./BillingPage.css";
 
 const { Title } = Typography;
 
+// ---------------- Product Form ----------------
+const ProductForm = ({ onFinish, editingProduct }) => {
+  const [form] = Form.useForm();
+
+  // Populate form when editing / reset when adding
+  useEffect(() => {
+    if (editingProduct) {
+      form.setFieldsValue(editingProduct);
+    } else {
+      form.resetFields();
+      form.setFieldsValue({ quantity: 1 }); // default value
+    }
+  }, [editingProduct, form]);
+
+  const handleSubmit = (values) => {
+    onFinish(values);
+    form.resetFields(); // clear form after submit
+    form.setFieldsValue({ quantity: 1 }); // reset default
+  };
+
+  return (
+    <Form
+      layout="vertical"
+      form={form}
+      initialValues={{ quantity: 1 }}
+      onFinish={handleSubmit}
+    >
+      <Form.Item
+        label="Product Name"
+        name="name"
+        rules={[{ required: true, message: "Please enter product name" }]}
+      >
+        <Input placeholder="Enter product name" />
+      </Form.Item>
+
+      <Form.Item
+        label="Price"
+        name="price"
+        rules={[{ required: true, message: "Please enter product price" }]}
+      >
+        <InputNumber min={0} style={{ width: "100%" }} />
+      </Form.Item>
+
+      <Form.Item
+        label="Quantity"
+        name="quantity"
+        rules={[{ required: true, message: "Please enter product quantity" }]}
+      >
+        <InputNumber min={1} style={{ width: "100%" }} />
+      </Form.Item>
+
+      <Form.Item>
+        <Button type="primary" htmlType="submit" block>
+          {editingProduct ? "Update Product" : "Add Product"}
+        </Button>
+      </Form.Item>
+    </Form>
+  );
+};
+
+// ---------------- Product Table ----------------
+const ProductTable = ({ products, onEdit, onDelete }) => {
+  const columns = [
+    {
+      title: "Product Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Price",
+      dataIndex: "price",
+      key: "price",
+      render: (price) => `Rs. ${price}`,
+    },
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+    },
+    {
+      title: "Total",
+      key: "total",
+      render: (_, record) => `Rs. ${record.price * record.quantity}`,
+    },
+    {
+      title: "Actions",
+      key: "actions",
+      render: (_, record) => (
+        <>
+          <Button type="link" onClick={() => onEdit(record)}>
+            Edit
+          </Button>
+          <Popconfirm
+            title="Are you sure to delete this product?"
+            onConfirm={() => onDelete(record._id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="link" danger>
+              Delete
+            </Button>
+          </Popconfirm>
+        </>
+      ),
+    },
+  ];
+
+  return <Table dataSource={products} columns={columns} rowKey="_id" pagination={false} />;
+};
+
+// ---------------- Billing Page ----------------
 const BillingPage = () => {
   const [products, setProducts] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -80,13 +189,13 @@ const BillingPage = () => {
 
     // Shop Header
     doc.setFontSize(18);
-    doc.text("sonu di hatti", 14, 20);
+    doc.text("Company Name", 14, 20);
     doc.setFontSize(12);
-    doc.text("2 no street , malik muhalla,south africa", 14, 28);
+    doc.text("Rachna Town, Shahdara, Lahore", 14, 28);
     doc.text("Phone: +92 300 1234567", 14, 36);
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 44);
 
-    // Generate table using autoTable (✅ FIXED usage)
+    // Generate table using autoTable
     autoTable(doc, {
       startY: 50,
       head: [["#", "Product Name", "Price", "Qty", "Total"]],
