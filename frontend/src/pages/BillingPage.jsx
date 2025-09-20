@@ -165,7 +165,7 @@ const BillingPage = () => {
   // Delete product
   const handleDelete = async (id) => {
     try {
-      await fetch(`http://localhost:5000/api/products/${id}`, { method: "DELETE" });
+      await fetch(`http://pure-success-production.up.railway.app/api/products/${id}`, { method: "DELETE" });
       message.success("Product deleted!");
       fetchProducts();
     } catch (error) {
